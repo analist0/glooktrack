@@ -14,15 +14,22 @@ const store: Record<Provider, KeyUsage[]> = {
   gemini: [],
 };
 
-function initKeys() {
-  if (store.gemini.length) return;
+let initialized = false;
 
-  store.perplexity =
-    process.env.PERPLEXITY_KEYS?.split(",").map((k) => newKey(k.trim())) || [];
-  store.xai =
-    process.env.XAI_KEYS?.split(",").map((k) => newKey(k.trim())) || [];
-  store.gemini =
-    process.env.GEMINI_KEYS?.split(",").map((k) => newKey(k.trim())) || [];
+function initKeys() {
+  if (initialized) return;
+  initialized = true;
+
+  const parseKeys = (value?: string) =>
+    value
+      ?.split(",")
+      .map((k) => k.trim())
+      .filter(Boolean)
+      .map((k) => newKey(k)) || [];
+
+  store.perplexity = parseKeys(process.env.PERPLEXITY_KEYS);
+  store.xai = parseKeys(process.env.XAI_KEYS);
+  store.gemini = parseKeys(process.env.GEMINI_KEYS);
 }
 
 function newKey(key: string): KeyUsage {
