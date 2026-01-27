@@ -200,17 +200,17 @@ export function TrendsChart({ measurements }: TrendsChartProps) {
         </ChartContainer>
 
         {/* מקרא */}
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-4 text-xs text-muted-foreground">
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-6 mt-4 text-xs text-muted-foreground bg-muted/30 rounded-xl py-3 px-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-6 h-0.5 bg-blue-500 rounded" style={{ borderStyle: "dashed" }} />
+            <span className="w-6 h-0.5 bg-blue-500 dark:bg-blue-400 rounded" style={{ borderStyle: "dashed" }} />
             <span>נמוך (&lt;70)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-emerald-500" />
+            <span className="w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-400" />
             <span>תקין (70-180)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-6 h-0.5 bg-red-500 rounded" style={{ borderStyle: "dashed" }} />
+            <span className="w-6 h-0.5 bg-red-500 dark:bg-red-400 rounded" style={{ borderStyle: "dashed" }} />
             <span>גבוה (&gt;180)</span>
           </div>
         </div>

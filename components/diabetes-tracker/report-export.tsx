@@ -346,10 +346,37 @@ function generateReportInsights(measurements: BloodSugarMeasurement[], filteredS
 export function ReportExport({ measurements, stats, patientName }: ReportExportProps) {
   const [dateRange, setDateRange] = useState<DateRange>("month");
   const [isOpen, setIsOpen] = useState(false);
+  const [localPatientName, setLocalPatientName] = useState("");
+  const [nameSaved, setNameSaved] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  // Load patient name from localStorage on mount
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedName = localStorage.getItem(NAME_STORAGE_KEY);
+      if (savedName) {
+        setLocalPatientName(savedName);
+      }
+    }
+  }, []);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setLocalPatientName(newName);
+    setNameSaved(false);
+  };
+
+  const savePatientName = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(NAME_STORAGE_KEY, localPatientName);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    }
+  };
 
   const getPatientName = () => {
     if (patientName) return patientName;
+    if (localPatientName) return localPatientName;
     if (typeof window !== "undefined") {
       return localStorage.getItem(NAME_STORAGE_KEY) || "לא צוין";
     }
@@ -959,6 +986,35 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* שם המטופל */}
+          <div className="space-y-2 text-right">
+            <Label className="text-sm font-semibold flex items-center gap-2 justify-end">
+              שם לדו"ח
+              <User className="w-4 h-4 text-muted-foreground" />
+            </Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={nameSaved ? "default" : "outline"}
+                size="sm"
+                onClick={savePatientName}
+                className={`h-12 px-4 transition-all ${nameSaved ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
+                disabled={!localPatientName.trim()}
+              >
+                {nameSaved ? '✓ נשמר' : 'שמור'}
+              </Button>
+              <input
+                type="text"
+                value={localPatientName}
+                onChange={handleNameChange}
+                placeholder="הזן את שמך"
+                className="flex-1 h-12 px-4 text-right rounded-xl border border-input bg-background text-base"
+                dir="rtl"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">השם יישמר ויופיע בכל הדוחות שלך</p>
+          </div>
+
           {/* בחירת טווח תאריכים */}
           <div className="space-y-2 text-right">
             <Label className="text-sm font-semibold flex items-center gap-2 justify-end">
