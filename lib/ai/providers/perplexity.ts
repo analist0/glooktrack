@@ -1,3 +1,11 @@
+/**
+ * Request a chat completion from Perplexity and return the selected message content.
+ *
+ * @param apiKey - Perplexity API key used for the Bearer Authorization header
+ * @param prompt - User prompt sent as the message content
+ * @returns The content of the first choice's message, or an empty string if no content is present
+ * @throws The fetch Response object when the HTTP response has a non-OK status
+ */
 export async function callPerplexity(apiKey: string, prompt: string) {
   const res = await fetch("https://api.perplexity.ai/chat/completions", {
     method: "POST",
