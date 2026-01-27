@@ -419,9 +419,9 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-full h-12 sm:h-14 text-base font-semibold rounded-xl border-2 border-teal-200 hover:bg-teal-50 hover:border-teal-300 transition-all bg-transparent"
+          className="group w-full h-12 sm:h-14 text-base font-semibold rounded-xl border-2 border-teal-200 dark:border-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/30 hover:border-teal-300 dark:hover:border-teal-600 transition-all duration-300 bg-transparent hover:-translate-y-0.5 hover:shadow-lg"
         >
-          <FileText className="w-5 h-5 ms-2" />
+          <FileText className="w-5 h-5 ms-2 transition-transform duration-300 group-hover:scale-110" />
           ייצוא דו"ח לרופא
         </Button>
       </DialogTrigger>
