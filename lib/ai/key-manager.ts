@@ -59,6 +59,18 @@ export function blockKey(provider: Provider, key: string) {
   if (entry) entry.blocked = true;
 }
 
+export const ALL_PROVIDERS: Provider[] = ["gemini", "xai", "perplexity"];
+
+export function hasAvailableKeys(provider: Provider): boolean {
+  initKeys();
+  return store[provider].some((k) => !k.blocked);
+}
+
+export function getFallbackOrder(preferred: Provider): Provider[] {
+  return [preferred, ...ALL_PROVIDERS.filter((p) => p !== preferred)];
+}
+
 export function debugStats() {
+  initKeys();
   return store;
 }
