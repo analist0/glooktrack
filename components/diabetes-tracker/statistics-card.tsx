@@ -108,8 +108,8 @@ export function StatisticsCard({ stats }: StatisticsCardProps) {
     <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-card to-card/80">
       <CardHeader className="bg-gradient-to-l from-emerald-500/10 to-transparent pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-emerald-500/10">
-            <BarChart3 className="w-5 h-5 text-emerald-600" />
+          <div className="p-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20">
+            <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="text-right">
             <CardTitle className="text-xl">סטטיסטיקות</CardTitle>
@@ -150,15 +150,15 @@ export function StatisticsCard({ stats }: StatisticsCardProps) {
             label="הגבוה ביותר"
             measurement={stats.highest}
             icon={TrendingUp}
-            iconColor="bg-red-100 text-red-600"
-            bgColor="bg-red-50/50"
+            iconColor="bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400"
+            bgColor="bg-red-50/50 dark:bg-red-950/30"
           />
           <ExtremeStat
             label="הנמוך ביותר"
             measurement={stats.lowest}
             icon={TrendingDown}
-            iconColor="bg-blue-100 text-blue-600"
-            bgColor="bg-blue-50/50"
+            iconColor="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
+            bgColor="bg-blue-50/50 dark:bg-blue-950/30"
           />
         </div>
       </CardContent>
