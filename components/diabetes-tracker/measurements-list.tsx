@@ -176,7 +176,7 @@ export function MeasurementsList({
               return (
                 <div
                   key={measurement.id}
-                  className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all hover:shadow-md ${status.bgColor} border-transparent`}
+                  className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:scale-[1.01] ${status.bgColor} border-transparent`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                     {/* ערך סוכר בדם */}

@@ -7,6 +7,7 @@ import { MeasurementsList } from "@/components/diabetes-tracker/measurements-lis
 import { StatisticsCard } from "@/components/diabetes-tracker/statistics-card";
 import { TrendsChart } from "@/components/diabetes-tracker/trends-chart";
 import { ReportExport } from "@/components/diabetes-tracker/report-export";
+import { InsightsCard } from "@/components/diabetes-tracker/insights-card";
 import { PWAInstaller } from "@/components/diabetes-tracker/pwa-installer";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
 import {
@@ -41,12 +42,12 @@ const HealthTips = memo(function HealthTips() {
   ];
 
   return (
-    <Card className="rounded-2xl border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50">
+    <Card className="rounded-2xl border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
       <CardHeader className="pb-2 sm:pb-3">
         <CardTitle className="flex items-center gap-2 justify-end text-base sm:text-lg">
           <span>טיפים לניהול סוכרת</span>
-          <div className="p-1.5 rounded-lg bg-amber-100">
-            <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50">
+            <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -196,7 +197,10 @@ export default function DiabetesTrackerPage() {
               <StatisticsCard stats={stats} />
             </div>
             <TrendsChart measurements={measurements} />
-            
+
+            {/* תובנות חכמות */}
+            <InsightsCard measurements={measurements} />
+
             {/* טיפים לבריאות */}
             <HealthTips />
             
@@ -206,19 +210,19 @@ export default function DiabetesTrackerPage() {
         </div>
 
         {/* הודעת פרטיות - מיושרת לימין */}
-        <div className="mt-6 sm:mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-teal-50 to-emerald-50 border border-teal-100 shadow-sm">
+        <div className="mt-6 sm:mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 border border-teal-100 dark:border-teal-800 shadow-sm">
           <div className="flex items-start gap-3 justify-end">
             <div className="text-right flex-1">
               <div className="flex items-center gap-2 justify-end mb-1">
-                <p className="font-semibold text-teal-800 text-sm sm:text-base">
+                <p className="font-semibold text-teal-800 dark:text-teal-200 text-sm sm:text-base">
                   הנתונים שלך מאובטחים
                 </p>
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0" />
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 dark:text-teal-400 flex-shrink-0" />
               </div>
-              <p className="text-xs sm:text-sm text-teal-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-teal-700 dark:text-teal-300 leading-relaxed">
                 כל המידע נשמר באופן מקומי במכשיר שלך בלבד ואינו משותף עם שום שרת חיצוני.
               </p>
-              <p className="text-[10px] sm:text-xs text-teal-600 mt-1">
+              <p className="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 mt-1">
                 תמיד התייעץ עם הרופא המטפל שלך לקבלת ייעוץ רפואי מקצועי.
               </p>
             </div>
