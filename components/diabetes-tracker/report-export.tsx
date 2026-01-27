@@ -333,7 +333,7 @@ function generateReportInsights(measurements: BloodSugarMeasurement[], filteredS
   }
 
   // Variability
-  if (filteredStats.highest && filteredStats.lowest) {
+  if (filteredStats.highest != null && filteredStats.lowest != null) {
     const variability = filteredStats.highest - filteredStats.lowest;
     if (variability > 150) {
       insights.push(`⚡ תנודתיות גבוהה: טווח של ${variability} מ"ג/ד"ל בין המדידות`);
