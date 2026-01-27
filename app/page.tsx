@@ -7,6 +7,7 @@ import { MeasurementsList } from "@/components/diabetes-tracker/measurements-lis
 import { StatisticsCard } from "@/components/diabetes-tracker/statistics-card";
 import { TrendsChart } from "@/components/diabetes-tracker/trends-chart";
 import { ReportExport } from "@/components/diabetes-tracker/report-export";
+import { InsightsCard } from "@/components/diabetes-tracker/insights-card";
 import { PWAInstaller } from "@/components/diabetes-tracker/pwa-installer";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
 import {
@@ -196,7 +197,10 @@ export default function DiabetesTrackerPage() {
               <StatisticsCard stats={stats} />
             </div>
             <TrendsChart measurements={measurements} />
-            
+
+            {/* תובנות חכמות */}
+            <InsightsCard measurements={measurements} />
+
             {/* טיפים לבריאות */}
             <HealthTips />
             
