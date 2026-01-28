@@ -20,8 +20,20 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
-import { CONTEXT_LABELS, getBloodSugarStatus } from "@/lib/diabetes-types";
+import { CONTEXT_LABELS, getBloodSugarStatus, BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
 import { formatDate, formatTime } from "@/lib/diabetes-storage";
+
+// HTML escape function to prevent XSS
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (char) => map[char]);
+}
 
 interface ReportExportProps {
   measurements: BloodSugarMeasurement[];
@@ -70,13 +82,13 @@ function generateLineChartSVG(measurements: BloodSugarMeasurement[]): string {
             <line x1="${padding.left}" y1="${y}" x2="${padding.left + chartWidth}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="4"/>`;
   }).join('');
 
-  // Reference lines for normal range (70-180)
-  const y70 = padding.top + chartHeight - ((70 - minVal) / range) * chartHeight;
-  const y180 = padding.top + chartHeight - ((180 - minVal) / range) * chartHeight;
+  // Reference lines for normal range
+  const y70 = padding.top + chartHeight - ((BLOOD_SUGAR_THRESHOLDS.LOW - minVal) / range) * chartHeight;
+  const y180 = padding.top + chartHeight - ((BLOOD_SUGAR_THRESHOLDS.HIGH - minVal) / range) * chartHeight;
 
   // Dots for each point with color coding
   const dots = points.map(p => {
-    const color = p.value < 70 ? '#3b82f6' : p.value > 180 ? '#ef4444' : '#10b981';
+    const color = p.value < BLOOD_SUGAR_THRESHOLDS.LOW ? '#3b82f6' : p.value > BLOOD_SUGAR_THRESHOLDS.HIGH ? '#ef4444' : '#10b981';
     return `<circle cx="${p.x}" cy="${p.y}" r="5" fill="${color}" stroke="white" stroke-width="2"/>`;
   }).join('');
 
@@ -97,9 +109,9 @@ function generateLineChartSVG(measurements: BloodSugarMeasurement[]): string {
 
       <!-- Reference lines -->
       <line x1="${padding.left}" y1="${y70}" x2="${padding.left + chartWidth}" y2="${y70}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6"/>
-      <text x="${padding.left + chartWidth + 5}" y="${y70 + 4}" fill="#10b981" font-size="10">70</text>
+      <text x="${padding.left + chartWidth + 5}" y="${y70 + 4}" fill="#10b981" font-size="10">${BLOOD_SUGAR_THRESHOLDS.LOW}</text>
       <line x1="${padding.left}" y1="${y180}" x2="${padding.left + chartWidth}" y2="${y180}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6"/>
-      <text x="${padding.left + chartWidth + 5}" y="${y180 + 4}" fill="#f59e0b" font-size="10">180</text>
+      <text x="${padding.left + chartWidth + 5}" y="${y180 + 4}" fill="#f59e0b" font-size="10">${BLOOD_SUGAR_THRESHOLDS.HIGH}</text>
 
       <!-- Area fill -->
       <path d="${areaD}" fill="url(#lineGradient)"/>
@@ -239,7 +251,7 @@ function generateTimeChartSVG(timeData: { morning: number | null; afternoon: num
       `;
     }
     const barHeight = (d.value / maxValue) * chartHeight;
-    const color = d.value < 70 ? '#3b82f6' : d.value > 180 ? '#ef4444' : '#10b981';
+    const color = d.value < BLOOD_SUGAR_THRESHOLDS.LOW ? '#3b82f6' : d.value > BLOOD_SUGAR_THRESHOLDS.HIGH ? '#ef4444' : '#10b981';
     return `
       <rect x="${x}" y="${padding.top + chartHeight - barHeight}" width="${barWidth}" height="${barHeight}" fill="${color}" rx="4"/>
       <text x="${x + barWidth / 2}" y="${padding.top + chartHeight - barHeight - 8}" text-anchor="middle" fill="${color}" font-size="12" font-weight="bold">${d.value}</text>
@@ -247,9 +259,9 @@ function generateTimeChartSVG(timeData: { morning: number | null; afternoon: num
     `;
   }).join('');
 
-  // Reference line at 180
-  const y180 = padding.top + chartHeight - (180 / maxValue) * chartHeight;
-  const y70 = padding.top + chartHeight - (70 / maxValue) * chartHeight;
+  // Reference lines
+  const y180 = padding.top + chartHeight - (BLOOD_SUGAR_THRESHOLDS.HIGH / maxValue) * chartHeight;
+  const y70 = padding.top + chartHeight - (BLOOD_SUGAR_THRESHOLDS.LOW / maxValue) * chartHeight;
 
   return `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" style="background: #fafafa; border-radius: 12px;">
@@ -349,6 +361,16 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
   const [localPatientName, setLocalPatientName] = useState("");
   const [nameSaved, setNameSaved] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+  const nameSavedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (nameSavedTimeoutRef.current) {
+        clearTimeout(nameSavedTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Load patient name from localStorage on mount
   React.useEffect(() => {
@@ -370,7 +392,11 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
     if (typeof window !== "undefined") {
       localStorage.setItem(NAME_STORAGE_KEY, localPatientName);
       setNameSaved(true);
-      setTimeout(() => setNameSaved(false), 2000);
+      // Clear any existing timeout before setting a new one
+      if (nameSavedTimeoutRef.current) {
+        clearTimeout(nameSavedTimeoutRef.current);
+      }
+      nameSavedTimeoutRef.current = setTimeout(() => setNameSaved(false), 2000);
     }
   };
 
@@ -417,9 +443,9 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
     const highest = Math.max(...values);
     const lowest = Math.min(...values);
     
-    const inRange = filteredMeasurements.filter((m) => m.value >= 70 && m.value <= 180).length;
-    const low = filteredMeasurements.filter((m) => m.value < 70).length;
-    const high = filteredMeasurements.filter((m) => m.value > 180).length;
+    const inRange = filteredMeasurements.filter((m) => m.value >= BLOOD_SUGAR_THRESHOLDS.LOW && m.value <= BLOOD_SUGAR_THRESHOLDS.HIGH).length;
+    const low = filteredMeasurements.filter((m) => m.value < BLOOD_SUGAR_THRESHOLDS.LOW).length;
+    const high = filteredMeasurements.filter((m) => m.value > BLOOD_SUGAR_THRESHOLDS.HIGH).length;
 
     return { average, highest, lowest, inRange, low, high };
   };
@@ -454,7 +480,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
 <html dir="rtl" lang="he">
 <head>
   <meta charset="UTF-8">
-  <title>דו"ח מעקב סוכרת - ${name}</title>
+  <title>דו"ח מעקב סוכרת - ${escapeHtml(name)}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -754,7 +780,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
 
   <div class="patient-info">
     <div>
-      <div class="name">👤 ${name}</div>
+      <div class="name">👤 ${escapeHtml(name)}</div>
       <div style="color: #64748b; margin-top: 4px;">תקופת הדו"ח: <strong>${rangeLabels[dateRange]}</strong></div>
     </div>
     <div class="date">
@@ -819,7 +845,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
         <div class="legend-color normal"></div>
         <div>
           <strong style="color: #10b981">${filteredStats.inRange}</strong>
-          <span style="color: #64748b;"> מדידות בטווח (70-180) - </span>
+          <span style="color: #64748b;"> מדידות בטווח (${BLOOD_SUGAR_THRESHOLDS.LOW}-${BLOOD_SUGAR_THRESHOLDS.HIGH}) - </span>
           <strong style="color: #10b981">${filteredMeasurements.length > 0 ? Math.round((filteredStats.inRange / filteredMeasurements.length) * 100) : 0}%</strong>
         </div>
       </div>
@@ -827,7 +853,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
         <div class="legend-color low"></div>
         <div>
           <strong style="color: #3b82f6">${filteredStats.low}</strong>
-          <span style="color: #64748b;"> מדידות נמוכות (&lt;70) - </span>
+          <span style="color: #64748b;"> מדידות נמוכות (&lt;${BLOOD_SUGAR_THRESHOLDS.LOW}) - </span>
           <strong style="color: #3b82f6">${filteredMeasurements.length > 0 ? Math.round((filteredStats.low / filteredMeasurements.length) * 100) : 0}%</strong>
         </div>
       </div>
@@ -835,7 +861,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
         <div class="legend-color high"></div>
         <div>
           <strong style="color: #ef4444">${filteredStats.high}</strong>
-          <span style="color: #64748b;"> מדידות גבוהות (&gt;180) - </span>
+          <span style="color: #64748b;"> מדידות גבוהות (&gt;${BLOOD_SUGAR_THRESHOLDS.HIGH}) - </span>
           <strong style="color: #ef4444">${filteredMeasurements.length > 0 ? Math.round((filteredStats.high / filteredMeasurements.length) * 100) : 0}%</strong>
         </div>
       </div>
@@ -856,8 +882,8 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
     </thead>
     <tbody>
       ${contextPatterns.map(cp => {
-        const statusColor = cp.average < 70 ? '#3b82f6' : cp.average > 180 ? '#ef4444' : '#10b981';
-        const statusText = cp.average < 70 ? 'נמוך' : cp.average > 180 ? 'גבוה' : 'תקין';
+        const statusColor = cp.average < BLOOD_SUGAR_THRESHOLDS.LOW ? '#3b82f6' : cp.average > BLOOD_SUGAR_THRESHOLDS.HIGH ? '#ef4444' : '#10b981';
+        const statusText = cp.average < BLOOD_SUGAR_THRESHOLDS.LOW ? 'נמוך' : cp.average > BLOOD_SUGAR_THRESHOLDS.HIGH ? 'גבוה' : 'תקין';
         return `
         <tr>
           <td><strong>${CONTEXT_LABELS[cp.context as keyof typeof CONTEXT_LABELS] || cp.context}</strong></td>
@@ -888,14 +914,14 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
         ${filteredMeasurements
           .slice(0, 50)
           .map((m) => {
-            const valueClass = m.value < 70 ? "value-low" : m.value > 180 ? "value-high" : "value-normal";
+            const valueClass = m.value < BLOOD_SUGAR_THRESHOLDS.LOW ? "value-low" : m.value > BLOOD_SUGAR_THRESHOLDS.HIGH ? "value-high" : "value-normal";
             return `
             <tr>
               <td>${formatDate(m.date)}</td>
               <td>${formatTime(m.time)}</td>
               <td class="${valueClass}">${m.value}</td>
               <td>${CONTEXT_LABELS[m.context]}</td>
-              <td>${m.notes || "-"}</td>
+              <td>${m.notes ? escapeHtml(m.notes) : "-"}</td>
             </tr>
           `;
           })

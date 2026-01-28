@@ -5,11 +5,11 @@
 
 import { Provider } from "./key-manager";
 
-// Approximate costs per 1K tokens (input + output average)
+// Approximate costs per 1K tokens (input + output average) - Updated 2025 pricing
 const COSTS_PER_1K_TOKENS: Record<Provider, number> = {
-  perplexity: 0.20,  // $0.20 per 1K tokens (sonar-pro)
-  xai: 0.15,         // $0.15 per 1K tokens (grok-2)
-  gemini: 0.075,     // $0.075 per 1K tokens (gemini-pro)
+  perplexity: 0.009,  // Sonar Pro: $3/$15 per 1M tokens (input/output) = ~$9/1M avg = $0.009/1K
+  xai: 0.006,         // Grok-2: $2/$10 per 1M tokens (input/output) = ~$6/1M avg = $0.006/1K
+  gemini: 0.00025,    // Gemini 2.0 Flash: $0.10/$0.40 per 1M tokens = ~$0.25/1M avg = $0.00025/1K
 };
 
 // Model-specific token limits

@@ -99,7 +99,7 @@ export function AIAssistant({ measurements }: AIAssistantProps) {
     if (!content.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       role: "user",
       content: content.trim(),
       timestamp: new Date(),
@@ -133,7 +133,7 @@ export function AIAssistant({ measurements }: AIAssistantProps) {
       }
 
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: crypto.randomUUID(),
         role: "assistant",
         content: data.result,
         timestamp: new Date(),
@@ -342,6 +342,7 @@ export function AIAssistant({ measurements }: AIAssistantProps) {
                 className="flex-1 h-12 px-4 py-3 text-right text-sm rounded-xl border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-violet-500/50"
                 dir="rtl"
                 rows={1}
+                aria-label="שאל שאלה לעוזר AI"
               />
             </div>
 

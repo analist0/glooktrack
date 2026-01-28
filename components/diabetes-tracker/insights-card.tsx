@@ -23,6 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { BloodSugarMeasurement } from "@/lib/diabetes-types";
+import { BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
 
 interface InsightsCardProps {
   measurements: BloodSugarMeasurement[];
@@ -171,9 +172,9 @@ function analyzeInsights(measurements: BloodSugarMeasurement[]): Insight[] {
   }
 
   // 4. Distribution Analysis
-  const inRange = measurements.filter(m => m.value >= 70 && m.value <= 180);
-  const low = measurements.filter(m => m.value < 70);
-  const high = measurements.filter(m => m.value > 180);
+  const inRange = measurements.filter(m => m.value >= BLOOD_SUGAR_THRESHOLDS.LOW && m.value <= BLOOD_SUGAR_THRESHOLDS.HIGH);
+  const low = measurements.filter(m => m.value < BLOOD_SUGAR_THRESHOLDS.LOW);
+  const high = measurements.filter(m => m.value > BLOOD_SUGAR_THRESHOLDS.HIGH);
 
   const inRangePercent = Math.round((inRange.length / measurements.length) * 100);
   const lowPercent = Math.round((low.length / measurements.length) * 100);
@@ -205,7 +206,7 @@ function analyzeInsights(measurements: BloodSugarMeasurement[]): Insight[] {
       type: "warning",
       icon: AlertTriangle,
       title: "ערכים נמוכים תכופים",
-      description: `${lowPercent}% מהמדידות מתחת ל-70 מ"ג/ד"ל. שים לב לתסמיני היפוגליקמיה.`,
+      description: `${lowPercent}% מהמדידות מתחת ל-${BLOOD_SUGAR_THRESHOLDS.LOW} מ"ג/ד"ל. שים לב לתסמיני היפוגליקמיה.`,
       priority: 10,
     });
   }
@@ -216,7 +217,7 @@ function analyzeInsights(measurements: BloodSugarMeasurement[]): Insight[] {
       type: "warning",
       icon: AlertTriangle,
       title: "ערכים גבוהים תכופים",
-      description: `${highPercent}% מהמדידות מעל 180 מ"ג/ד"ל. כדאי להתייעץ עם הרופא.`,
+      description: `${highPercent}% מהמדידות מעל ${BLOOD_SUGAR_THRESHOLDS.HIGH} מ"ג/ד"ל. כדאי להתייעץ עם הרופא.`,
       priority: 9,
     });
   }

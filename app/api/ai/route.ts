@@ -15,6 +15,7 @@ import {
 } from "@/lib/ai/key-manager";
 import { estimateCost, calculateActualUsage } from "@/lib/ai/usage-engine";
 import { callProvider, getRecommendedProvider } from "@/lib/ai/router";
+import { BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
 
 // System prompt for GlucoTrack AI Assistant
 const GLUCOTRACK_SYSTEM_PROMPT = `אתה עוזר AI מומחה לניהול סוכרת בשם "גלוקו-AI".
@@ -170,6 +171,7 @@ export async function POST(request: NextRequest) {
               tokens: fallbackUsage.totalTokens,
               costUSD: fallbackUsage.costUSD,
             },
+            citations: fallbackResponse.citations,
             fallback: true,
           });
         } catch {
@@ -217,7 +219,7 @@ function buildMeasurementsContext(
   const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const inRange = values.filter(v => v >= 70 && v <= 180).length;
+  const inRange = values.filter(v => v >= BLOOD_SUGAR_THRESHOLDS.LOW && v <= BLOOD_SUGAR_THRESHOLDS.HIGH).length;
   const inRangePercent = Math.round((inRange / values.length) * 100);
 
   // Recent measurements (last 10)
