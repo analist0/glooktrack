@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Heart, Droplet } from "lucide-react";
+import { Info, Heart, Droplet, Settings } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,15 +10,19 @@ import {
 import { ProfileImage } from "./profile-image";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function Header() {
+interface HeaderProps {
+  onOpenSettings?: () => void;
+}
+
+export function Header({ onOpenSettings }: HeaderProps) {
   return (
     <header className="bg-gradient-to-l from-teal-600 via-teal-500 to-emerald-500 text-white sticky top-0 z-10 shadow-xl">
       <TooltipProvider>
         <div className="w-full px-2 py-2 sm:px-4 sm:py-3">
           {/* Flexbox עם גודל קבוע לכל אלמנט */}
           <div className="flex items-center justify-between gap-1 sm:gap-2">
-            {/* כפתורים - צד שמאל */}
-            <div className="flex-shrink-0 flex items-center gap-1">
+            {/* כפתורי פעולה - צד שמאל - גודל קבוע */}
+            <div className="flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
               {/* כפתור מצב כהה/בהיר */}
               <ThemeToggle />
 
@@ -53,6 +57,27 @@ export function Header() {
                       <span className="w-4 h-4 rounded-full bg-red-500 flex-shrink-0" />
                     </li>
                   </ul>
+                </TooltipContent>
+              </Tooltip>
+
+              {/* כפתור הגדרות */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={onOpenSettings}
+                    className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
+                    aria-label="הגדרות מערכת"
+                  >
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="start"
+                  className="text-sm"
+                >
+                  הגדרות מערכת
                 </TooltipContent>
               </Tooltip>
             </div>

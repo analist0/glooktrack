@@ -10,7 +10,9 @@ import { ReportExport } from "@/components/diabetes-tracker/report-export";
 import { InsightsCard } from "@/components/diabetes-tracker/insights-card";
 import { AIAssistant } from "@/components/diabetes-tracker/ai-assistant";
 import { PWAInstaller } from "@/components/diabetes-tracker/pwa-installer";
+import { AdminSettings } from "@/components/diabetes-tracker/admin-settings";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
+import type { AppSettings } from "@/lib/settings-types";
 import {
   loadMeasurements,
   saveMeasurement,
@@ -18,12 +20,13 @@ import {
   clearAllMeasurements,
   calculateStats,
 } from "@/lib/diabetes-storage";
-import { 
-  Phone, 
-  Code, 
-  Heart, 
-  Shield, 
-  Smartphone, 
+import { loadSettings } from "@/lib/settings-storage";
+import {
+  Phone,
+  Code,
+  Heart,
+  Shield,
+  Smartphone,
   Lightbulb,
   Clock,
   Utensils,
@@ -97,18 +100,37 @@ export default function DiabetesTrackerPage() {
     totalCount: 0,
   });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
   // Load data on mount with cleanup
   useEffect(() => {
     let isMounted = true;
-    
+
     const loadData = () => {
       try {
         const stored = loadMeasurements();
+        const settings = loadSettings();
         if (isMounted) {
           setMeasurements(stored);
           setStats(calculateStats(stored));
+          setAppSettings(settings);
           setIsLoaded(true);
+
+          // Apply theme from settings
+          const root = document.documentElement;
+          if (settings.display.theme === "dark") {
+            root.classList.add("dark");
+          } else if (settings.display.theme === "light") {
+            root.classList.remove("dark");
+          } else {
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (prefersDark) {
+              root.classList.add("dark");
+            } else {
+              root.classList.remove("dark");
+            }
+          }
         }
       } catch (error) {
         console.error("Error loading measurements:", error);
@@ -124,6 +146,31 @@ export default function DiabetesTrackerPage() {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  const handleSettingsChange = useCallback((newSettings: AppSettings) => {
+    setAppSettings(newSettings);
+    // Apply theme
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      if (newSettings.display.theme === "dark") {
+        root.classList.add("dark");
+      } else if (newSettings.display.theme === "light") {
+        root.classList.remove("dark");
+      } else {
+        // system
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (prefersDark) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      }
+    }
+    // Reload measurements in case data was imported
+    const stored = loadMeasurements();
+    setMeasurements(stored);
+    setStats(calculateStats(stored));
   }, []);
 
   const updateStats = useCallback((newMeasurements: BloodSugarMeasurement[]) => {
@@ -174,8 +221,15 @@ export default function DiabetesTrackerPage() {
       
       {/* PWA Installer */}
       <PWAInstaller />
-      
-      <Header />
+
+      <Header onOpenSettings={() => setSettingsOpen(true)} />
+
+      {/* Admin Settings Dialog */}
+      <AdminSettings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onSettingsChange={handleSettingsChange}
+      />
 
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
@@ -206,7 +260,7 @@ export default function DiabetesTrackerPage() {
             <AIAssistant measurements={measurements} />
 
             {/* טיפים לבריאות */}
-            <HealthTips />
+            {(!appSettings || appSettings.display.showTips) && <HealthTips />}
             
             {/* כפתור ייצוא דו"ח */}
             <ReportExport measurements={measurements} stats={stats} />
