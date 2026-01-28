@@ -10,6 +10,7 @@ import {
   reportError,
   blockKey,
   getAvailableProviders,
+  getStats,
   Provider,
 } from "@/lib/ai/key-manager";
 import { estimateCost, calculateActualUsage } from "@/lib/ai/usage-engine";
@@ -113,8 +114,8 @@ export async function POST(request: NextRequest) {
           )
         : costEstimate;
 
-      // Report usage
-      reportUsage(provider, keyData.key, actualUsage.totalTokens);
+      // Report usage (async, non-blocking)
+      await reportUsage(provider, keyData.key, actualUsage.totalTokens, actualUsage.costUSD);
 
       return NextResponse.json({
         ok: true,
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
               )
             : estimateCost(fullPrompt, fallbackProvider);
 
-          reportUsage(fallbackProvider, fallbackKey.key, fallbackUsage.totalTokens);
+          await reportUsage(fallbackProvider, fallbackKey.key, fallbackUsage.totalTokens, fallbackUsage.costUSD);
 
           return NextResponse.json({
             ok: true,
@@ -241,13 +242,28 @@ function buildMeasurementsContext(
 ${recentList}`;
 }
 
-// GET endpoint to check AI status
-export async function GET() {
+// GET endpoint to check AI status and get stats
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const includeStats = searchParams.get("stats") === "true";
+
   const providers = getAvailableProviders();
 
-  return NextResponse.json({
+  const response: {
+    ok: boolean;
+    availableProviders: Provider[];
+    status: string;
+    stats?: Awaited<ReturnType<typeof getStats>>;
+  } = {
     ok: true,
     availableProviders: providers,
     status: providers.length > 0 ? "operational" : "no_keys_configured",
-  });
+  };
+
+  // Include stats if requested
+  if (includeStats) {
+    response.stats = await getStats();
+  }
+
+  return NextResponse.json(response);
 }
