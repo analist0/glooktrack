@@ -1,6 +1,7 @@
 "use client";
 
-import { Info, Heart, Droplet, Settings } from "lucide-react";
+import { Info, Heart, Droplet, Settings, BarChart3 } from "lucide-react";
+import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
@@ -78,6 +79,26 @@ export function Header({ onOpenSettings }: HeaderProps) {
                   className="text-sm"
                 >
                   הגדרות מערכת
+                </TooltipContent>
+              </Tooltip>
+
+              {/* כפתור לוח בקרה */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/admin"
+                    className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
+                    aria-label="לוח בקרה"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="start"
+                  className="text-sm"
+                >
+                  לוח בקרה
                 </TooltipContent>
               </Tooltip>
             </div>

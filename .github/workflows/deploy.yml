@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel@latest
+
+      - name: Pull Vercel environment information
+        run: vercel pull --yes --environment=${{ github.event.inputs.environment || 'production' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project
+        run: vercel build ${{ github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "production" ]] || [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          else
+            URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          fi
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $URL"
+
+      - name: Comment deployment URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Deployed to Vercel: ${{ steps.deploy.outputs.url }}`
+            })
+
+# Required secrets:
+# - VERCEL_TOKEN: Your Vercel API token
+# - VERCEL_ORG_ID: Your Vercel organization ID
+# - VERCEL_PROJECT_ID: Your Vercel project ID
+#
+# To get these values:
+# 1. Install Vercel CLI: npm i -g vercel
+# 2. Run: vercel link
+# 3. Check .vercel/project.json for org and project IDs
+# 4. Generate token at: https://vercel.com/account/tokens

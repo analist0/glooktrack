@@ -1,5 +1,5 @@
 /**
- * AI Storage Layer - שכבת אחסון עם תמיכה ב-Redis/File/Memory
+ * AI Storage Layer - שכבת אחסון עם תמיכה ב-File/Memory
  * GlucoTrack AI Gateway
  */
 
@@ -27,82 +27,34 @@ interface StorageBackend {
   exists(key: string): Promise<boolean>;
 }
 
-// Redis backend
-class RedisBackend implements StorageBackend {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private client: any = null;
-  private connectionFailed = false;
-
-  async getClient() {
-    if (this.connectionFailed) return null;
-    if (this.client) return this.client;
-
-    const redisUrl = process.env.REDIS_URL;
-    if (!redisUrl) {
-      this.connectionFailed = true;
-      return null;
-    }
-
-    try {
-      // Dynamic import of ioredis (optional dependency)
-      // @ts-expect-error - ioredis is an optional dependency
-      const ioredis = await import("ioredis");
-      const Redis = ioredis.default || ioredis;
-      this.client = new Redis(redisUrl, {
-        maxRetriesPerRequest: 1,
-        connectTimeout: 5000,
-        lazyConnect: true,
-      });
-      await this.client.connect();
-      console.log("[AI Storage] Redis connected");
-      return this.client;
-    } catch {
-      console.log("[AI Storage] Redis not available, using fallback");
-      this.connectionFailed = true;
-      return null;
-    }
-  }
-
-  async get(key: string): Promise<string | null> {
-    const client = await this.getClient();
-    if (!client) return null;
-    return client.get(key);
-  }
-
-  async set(key: string, value: string): Promise<void> {
-    const client = await this.getClient();
-    if (!client) return;
-    await client.set(key, value);
-  }
-
-  async exists(key: string): Promise<boolean> {
-    const client = await this.getClient();
-    if (!client) return false;
-    return (await client.exists(key)) > 0;
-  }
-}
-
-// File-based backend (for development/fallback)
+// File-based backend (for server-side)
 class FileBackend implements StorageBackend {
   private dataDir: string;
   private fs: typeof import("fs/promises") | null = null;
-  private path: typeof import("path") | null = null;
+  private initFailed = false;
 
   constructor() {
     this.dataDir = process.env.AI_STORAGE_DIR || "./.ai-storage";
   }
 
   private async ensureFs() {
-    if (!this.fs) {
-      this.fs = await import("fs/promises");
-      this.path = await import("path");
-      try {
-        await this.fs.mkdir(this.dataDir, { recursive: true });
-      } catch {
-        // Directory might already exist
-      }
+    if (this.initFailed) return null;
+    if (this.fs) return this.fs;
+
+    // Only works server-side
+    if (typeof window !== "undefined") {
+      this.initFailed = true;
+      return null;
     }
-    return { fs: this.fs, path: this.path! };
+
+    try {
+      this.fs = await import("fs/promises");
+      await this.fs.mkdir(this.dataDir, { recursive: true });
+      return this.fs;
+    } catch {
+      this.initFailed = true;
+      return null;
+    }
   }
 
   private getFilePath(key: string): string {
@@ -111,7 +63,8 @@ class FileBackend implements StorageBackend {
 
   async get(key: string): Promise<string | null> {
     try {
-      const { fs } = await this.ensureFs();
+      const fs = await this.ensureFs();
+      if (!fs) return null;
       const content = await fs.readFile(this.getFilePath(key), "utf-8");
       return content;
     } catch {
@@ -121,7 +74,8 @@ class FileBackend implements StorageBackend {
 
   async set(key: string, value: string): Promise<void> {
     try {
-      const { fs } = await this.ensureFs();
+      const fs = await this.ensureFs();
+      if (!fs) return;
       await fs.writeFile(this.getFilePath(key), value, "utf-8");
     } catch (error) {
       console.error("[AI Storage] File write failed:", error);
@@ -130,7 +84,8 @@ class FileBackend implements StorageBackend {
 
   async exists(key: string): Promise<boolean> {
     try {
-      const { fs } = await this.ensureFs();
+      const fs = await this.ensureFs();
+      if (!fs) return false;
       await fs.access(this.getFilePath(key));
       return true;
     } catch {
@@ -158,53 +113,63 @@ class MemoryBackend implements StorageBackend {
 
 // Main storage class with fallback chain
 class AIStorage {
-  private redis: RedisBackend;
   private file: FileBackend;
   private memory: MemoryBackend;
-  private initialized = false;
 
   constructor() {
-    this.redis = new RedisBackend();
     this.file = new FileBackend();
     this.memory = new MemoryBackend();
   }
 
   private async getBackend(): Promise<StorageBackend> {
-    // Try Redis first
-    if (process.env.REDIS_URL) {
-      const redisClient = await this.redis.getClient();
-      if (redisClient) return this.redis;
-    }
-
-    // Fall back to file if in server environment
+    // Use file backend on server
     if (typeof window === "undefined") {
       return this.file;
     }
 
-    // Use memory as last resort
+    // Use memory on client
     return this.memory;
   }
 
   async get<T>(key: string): Promise<T | null> {
+    // Try memory first for speed
+    const memValue = await this.memory.get(key);
+    if (memValue) {
+      try {
+        return JSON.parse(memValue) as T;
+      } catch {
+        // Continue to file backend
+      }
+    }
+
     const backend = await this.getBackend();
     const value = await backend.get(key);
     if (!value) return null;
+
     try {
-      return JSON.parse(value) as T;
+      const parsed = JSON.parse(value) as T;
+      // Cache in memory
+      await this.memory.set(key, value);
+      return parsed;
     } catch {
       return null;
     }
   }
 
   async set<T>(key: string, value: T): Promise<void> {
-    const backend = await this.getBackend();
-    await backend.set(key, JSON.stringify(value));
+    const serialized = JSON.stringify(value);
 
-    // Also save to memory for fast access
-    await this.memory.set(key, JSON.stringify(value));
+    // Save to memory for fast access
+    await this.memory.set(key, serialized);
+
+    // Also persist to file backend
+    const backend = await this.getBackend();
+    await backend.set(key, serialized);
   }
 
   async exists(key: string): Promise<boolean> {
+    if (await this.memory.exists(key)) return true;
+
     const backend = await this.getBackend();
     return backend.exists(key);
   }
