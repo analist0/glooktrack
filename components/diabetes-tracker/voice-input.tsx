@@ -340,8 +340,8 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
 
   if (!isSupported) {
     return (
-      <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center">
-        <p className="text-sm text-amber-700">
+      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-center">
+        <p className="text-sm text-amber-700 dark:text-amber-300">
           הדפדפן שלך אינו תומך בזיהוי קולי. אנא השתמש בהזנה ידנית.
         </p>
       </div>
@@ -358,7 +358,7 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
         className={`w-full h-14 sm:h-16 text-base sm:text-lg font-semibold gap-3 transition-all rounded-xl ${
           isListening
             ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30"
-            : "bg-gradient-to-l from-teal-50 to-emerald-50 border-2 border-dashed border-teal-300 hover:border-teal-400 hover:from-teal-100 hover:to-emerald-100 text-teal-700"
+            : "bg-gradient-to-l from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 border-2 border-dashed border-teal-300 dark:border-teal-700 hover:border-teal-400 dark:hover:border-teal-600 hover:from-teal-100 hover:to-emerald-100 dark:hover:from-teal-900/40 dark:hover:to-emerald-900/40 text-teal-700 dark:text-teal-300"
         }`}
       >
         {isListening ? (
@@ -379,13 +379,13 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
       </Button>
 
       {isListening && (
-        <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-l from-red-50 to-orange-50 border border-red-200 space-y-2">
-          <div className="flex items-center gap-2 text-red-700">
+        <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-l from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border border-red-200 dark:border-red-800 space-y-2">
+          <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span className="font-medium">מקשיב...</span>
           </div>
           {transcript && (
-            <p className="text-red-600 text-sm sm:text-base leading-relaxed">
+            <p className="text-red-600 dark:text-red-400 text-sm sm:text-base leading-relaxed">
               &quot;{transcript}&quot;
             </p>
           )}
@@ -393,8 +393,8 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
       )}
 
       {parsedInfo && !isListening && (
-        <div className="p-3 rounded-xl bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-200">
-          <p className="text-xs sm:text-sm text-emerald-700 font-medium text-center">
+        <div className="p-3 rounded-xl bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800">
+          <p className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-medium text-center">
             {parsedInfo}
           </p>
         </div>

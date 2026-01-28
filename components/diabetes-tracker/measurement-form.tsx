@@ -273,20 +273,20 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
           <Button
             type="submit"
             size="lg"
-            className={`w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl transition-all duration-300 ${
+            className={`group w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl transition-all duration-300 ${
               showSuccess
-                ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30"
-                : "bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 shadow-lg shadow-teal-500/30"
+                ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 scale-[1.02]"
+                : "bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5"
             } text-white`}
           >
             {showSuccess ? (
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-6 h-6" />
+              <span className="flex items-center gap-2 animate-success-pop">
+                <CheckCircle2 className="w-6 h-6 animate-checkmark" />
                 נשמר בהצלחה!
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <Plus className="w-6 h-6" />
+                <Plus className="w-6 h-6 transition-transform duration-200 group-hover:rotate-90" />
                 שמור מדידה
               </span>
             )}

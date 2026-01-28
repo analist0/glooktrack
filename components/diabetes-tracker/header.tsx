@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ProfileImage } from "./profile-image";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Header() {
   return (
@@ -16,8 +17,12 @@ export function Header() {
         <div className="w-full px-2 py-2 sm:px-4 sm:py-3">
           {/* Flexbox עם גודל קבוע לכל אלמנט */}
           <div className="flex items-center justify-between gap-1 sm:gap-2">
-            {/* כפתור מידע - צד שמאל - גודל קבוע */}
-            <div className="flex-shrink-0 w-10 sm:w-12">
+            {/* כפתורים - צד שמאל */}
+            <div className="flex-shrink-0 flex items-center gap-1">
+              {/* כפתור מצב כהה/בהיר */}
+              <ThemeToggle />
+
+              {/* כפתור מידע */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
