@@ -355,7 +355,7 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
         variant={isListening ? "destructive" : "outline"}
         size="lg"
         onClick={toggleListening}
-        className={`w-full h-14 sm:h-16 text-base sm:text-lg font-semibold gap-3 transition-all rounded-xl ${
+        className={`w-full h-12 sm:h-16 text-sm sm:text-lg font-semibold gap-2 sm:gap-3 transition-all rounded-xl ${
           isListening
             ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30"
             : "bg-gradient-to-l from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 border-2 border-dashed border-teal-300 dark:border-teal-700 hover:border-teal-400 dark:hover:border-teal-600 hover:from-teal-100 hover:to-emerald-100 dark:hover:from-teal-900/40 dark:hover:to-emerald-900/40 text-teal-700 dark:text-teal-300"

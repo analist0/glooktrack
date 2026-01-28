@@ -73,7 +73,7 @@ const HealthTips = memo(function HealthTips() {
 const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <div className="h-14 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
+      <div className="h-11 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
       <main className="max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <div className="space-y-4 sm:space-y-6">
@@ -213,7 +213,7 @@ export default function DiabetesTrackerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col overflow-x-hidden">
       {/* Skip link for accessibility */}
       <a href="#main-content" className="skip-link sr-only focus:not-sr-only">
         דלג לתוכן הראשי
@@ -234,7 +234,7 @@ export default function DiabetesTrackerPage() {
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* עמודה ימנית - טופס ורשימה */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             <MeasurementForm onSave={handleSaveMeasurement} />
             <div className="lg:hidden">
               <StatisticsCard stats={stats} />
@@ -247,7 +247,7 @@ export default function DiabetesTrackerPage() {
           </div>
 
           {/* עמודה שמאלית - סטטיסטיקות וגרף */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             <div className="hidden lg:block">
               <StatisticsCard stats={stats} />
             </div>

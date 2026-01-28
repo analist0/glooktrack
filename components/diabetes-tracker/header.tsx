@@ -16,11 +16,11 @@ interface HeaderProps {
 
 export function Header({ onOpenSettings }: HeaderProps) {
   return (
-    <header className="bg-gradient-to-l from-teal-600 via-teal-500 to-emerald-500 text-white sticky top-0 z-10 shadow-xl">
+    <header className="bg-gradient-to-l from-teal-600 via-teal-500 to-emerald-500 text-white sticky top-0 z-10 shadow-xl overflow-hidden">
       <TooltipProvider>
-        <div className="w-full px-2 py-2 sm:px-4 sm:py-3">
+        <div className="w-full px-1.5 py-1.5 sm:px-4 sm:py-3">
           {/* Flexbox עם גודל קבוע לכל אלמנט */}
-          <div className="flex items-center justify-between gap-1 sm:gap-2">
+          <div className="flex items-center justify-between gap-0.5 sm:gap-2">
             {/* כפתורי פעולה - צד שמאל - גודל קבוע */}
             <div className="flex-shrink-0 flex items-center gap-0.5 sm:gap-1">
               {/* כפתור מצב כהה/בהיר */}
@@ -31,10 +31,10 @@ export function Header({ onOpenSettings }: HeaderProps) {
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
+                    className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
                     aria-label="מידע על טווחי סוכר בריאים"
                   >
-                    <Info className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Info className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
@@ -66,10 +66,10 @@ export function Header({ onOpenSettings }: HeaderProps) {
                   <button
                     type="button"
                     onClick={onOpenSettings}
-                    className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
+                    className="flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-xl text-white/90 hover:bg-white/20 transition-colors"
                     aria-label="הגדרות מערכת"
                   >
-                    <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Settings className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
@@ -83,14 +83,14 @@ export function Header({ onOpenSettings }: HeaderProps) {
             </div>
 
             {/* לוגו - מרכז - flex-1 */}
-            <div className="flex items-center justify-center gap-1 sm:gap-2 flex-1">
-              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm flex-shrink-0">
-                <Droplet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="flex items-center justify-center gap-0.5 sm:gap-2 flex-1 min-w-0">
+              <div className="p-1 sm:p-2 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm flex-shrink-0">
+                <Droplet className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div className="text-center flex-shrink-0">
-                <div className="flex items-center gap-1 justify-center">
-                  <Heart className="w-3 h-3 text-red-300 animate-pulse" />
-                  <h1 className="text-sm sm:text-lg font-bold tracking-tight">
+              <div className="text-center min-w-0">
+                <div className="flex items-center gap-0.5 justify-center">
+                  <Heart className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-300 animate-pulse flex-shrink-0" />
+                  <h1 className="text-xs sm:text-lg font-bold tracking-tight truncate">
                     גלוקוטרק
                   </h1>
                 </div>

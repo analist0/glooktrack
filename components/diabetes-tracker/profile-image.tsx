@@ -84,20 +84,20 @@ export function ProfileImage() {
 
   if (!isLoaded) {
     return (
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <div className="text-right">
-          <div className="h-3 w-12 sm:w-16 bg-white/20 rounded animate-pulse" />
-          <div className="h-2 w-8 sm:w-10 bg-white/10 rounded animate-pulse mt-1" />
+          <div className="h-3 w-10 sm:w-16 bg-white/20 rounded animate-pulse" />
+          <div className="h-2 w-6 sm:w-10 bg-white/10 rounded animate-pulse mt-1" />
         </div>
-        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white/20 animate-pulse flex-shrink-0" />
+        <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-white/20 animate-pulse flex-shrink-0" />
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {/* שם החולה */}
-      <div className="text-right max-w-[70px] sm:max-w-[100px]">
+      <div className="text-right max-w-[60px] sm:max-w-[100px]">
         {isEditingName ? (
           <Input
             ref={nameInputRef}
@@ -115,10 +115,10 @@ export function ProfileImage() {
             onClick={startEditingName}
             className="group/name flex flex-col items-end text-white/90 hover:text-white transition-colors w-full"
           >
-            <span className="text-[11px] sm:text-sm font-medium truncate max-w-full leading-tight">
+            <span className="text-[10px] sm:text-sm font-medium truncate max-w-full leading-tight">
               {patientName}
             </span>
-            <span className="text-[8px] sm:text-[10px] text-white/50 flex items-center gap-0.5">
+            <span className="text-[7px] sm:text-[10px] text-white/50 flex items-center gap-0.5">
               <Edit2 className="w-2 h-2 opacity-0 group-hover/name:opacity-100" />
               לחץ לעריכה
             </span>
@@ -128,7 +128,7 @@ export function ProfileImage() {
 
       {/* תמונה - גודל קבוע */}
       <div className="relative group flex-shrink-0">
-        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white/10 border-2 border-white/30 shadow-lg">
+        <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white/10 border-2 border-white/30 shadow-lg">
           {image ? (
             <img
               src={image || "/placeholder.svg"}
@@ -145,7 +145,7 @@ export function ProfileImage() {
         <Button
           type="button"
           size="icon"
-          className="absolute -bottom-0.5 -start-0.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity bg-white text-teal-600 hover:bg-white/90"
+          className="absolute -bottom-0.5 -start-0.5 w-4 h-4 sm:w-6 sm:h-6 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity bg-white text-teal-600 hover:bg-white/90"
           onClick={() => fileInputRef.current?.click()}
           aria-label="העלה תמונת פרופיל"
         >
@@ -157,7 +157,7 @@ export function ProfileImage() {
             type="button"
             size="icon"
             variant="destructive"
-            className="absolute -top-0.5 -start-0.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute -top-0.5 -start-0.5 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={removeImage}
             aria-label="הסר תמונת פרופיל"
           >
