@@ -68,7 +68,7 @@ const HealthTips = memo(function HealthTips() {
 const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <div className="h-14 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
+      <div className="h-11 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
       <main className="max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <div className="space-y-4 sm:space-y-6">
