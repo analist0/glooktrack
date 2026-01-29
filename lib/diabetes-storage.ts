@@ -26,6 +26,14 @@ export function saveMeasurement(measurement: BloodSugarMeasurement): BloodSugarM
   return measurements;
 }
 
+export function saveMeasurementsBatch(newMeasurements: BloodSugarMeasurement[]): BloodSugarMeasurement[] {
+  const measurements = loadMeasurements();
+  measurements.unshift(...newMeasurements);
+  measurements.sort((a, b) => b.createdAt - a.createdAt);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(measurements));
+  return measurements;
+}
+
 export function deleteMeasurement(id: string): BloodSugarMeasurement[] {
   const measurements = loadMeasurements();
   const filtered = measurements.filter((m) => m.id !== id);

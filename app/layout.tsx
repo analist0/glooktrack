@@ -1,13 +1,10 @@
 import React from "react";
-import { Heebo } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const heebo = Heebo({ 
-  subsets: ["hebrew", "latin"],
-  display: "swap",
-  variable: "--font-heebo",
-});
+// Using system fonts as fallback for Hebrew support
+// Google Fonts are loaded via CSS link for better offline support
 
 export default function RootLayout({
   children,
@@ -15,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={heebo.variable}>
+    <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
         {/* Basic Meta */}
         <meta charSet="utf-8" />
@@ -152,7 +149,14 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>

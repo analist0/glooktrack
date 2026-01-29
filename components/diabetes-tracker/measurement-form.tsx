@@ -116,12 +116,12 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
   return (
     <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-card to-card/80">
       <CardHeader className="bg-gradient-to-l from-teal-500/10 to-transparent pb-3 sm:pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 shadow-lg shadow-teal-500/20">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 shadow-lg shadow-teal-500/20">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <div className="text-right flex-1">
-            <CardTitle className="text-xl sm:text-2xl">רישום מדידה חדשה</CardTitle>
+          <div className="text-right flex-1 min-w-0">
+            <CardTitle className="text-lg sm:text-2xl">רישום מדידה חדשה</CardTitle>
             <CardDescription className="text-sm">
               תעד את רמת הסוכר בדם שלך
             </CardDescription>
@@ -158,7 +158,7 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
                 placeholder="הזן ערך"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className={`h-20 sm:h-24 text-4xl sm:text-5xl font-bold text-center rounded-2xl transition-all ${
+                className={`h-16 sm:h-24 text-3xl sm:text-5xl font-bold text-center rounded-2xl transition-all ${
                   currentStatus 
                     ? `${currentStatus.bgColor} ${currentStatus.color} border-2 ${currentStatus.color.replace('text-', 'border-')}`
                     : "bg-muted/30"
@@ -193,7 +193,7 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="h-12 sm:h-14 text-base sm:text-lg text-center rounded-xl"
+                className="h-11 sm:h-14 text-sm sm:text-lg text-center rounded-xl"
                 aria-invalid={!!errors.date}
               />
               {errors.date && (
@@ -210,7 +210,7 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="h-12 sm:h-14 text-base sm:text-lg text-center rounded-xl"
+                className="h-11 sm:h-14 text-sm sm:text-lg text-center rounded-xl"
                 aria-invalid={!!errors.time}
               />
               {errors.time && (
@@ -230,7 +230,7 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
             >
               <SelectTrigger
                 id="context"
-                className="h-12 sm:h-14 text-base sm:text-lg w-full rounded-xl [&>span]:text-right [&>span]:w-full [&>span]:block"
+                className="h-11 sm:h-14 text-sm sm:text-lg w-full rounded-xl [&>span]:text-right [&>span]:w-full [&>span]:block"
                 aria-invalid={!!errors.context}
                 dir="rtl"
               >
@@ -273,20 +273,20 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
           <Button
             type="submit"
             size="lg"
-            className={`w-full h-14 sm:h-16 text-lg sm:text-xl font-bold rounded-xl transition-all duration-300 ${
+            className={`group w-full h-12 sm:h-16 text-base sm:text-xl font-bold rounded-xl transition-all duration-300 ${
               showSuccess
-                ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30"
-                : "bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 shadow-lg shadow-teal-500/30"
+                ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 scale-[1.02]"
+                : "bg-gradient-to-l from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40 hover:-translate-y-0.5"
             } text-white`}
           >
             {showSuccess ? (
-              <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-6 h-6" />
+              <span className="flex items-center gap-2 animate-success-pop">
+                <CheckCircle2 className="w-6 h-6 animate-checkmark" />
                 נשמר בהצלחה!
               </span>
             ) : (
               <span className="flex items-center gap-2">
-                <Plus className="w-6 h-6" />
+                <Plus className="w-6 h-6 transition-transform duration-200 group-hover:rotate-90" />
                 שמור מדידה
               </span>
             )}

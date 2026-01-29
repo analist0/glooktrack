@@ -32,17 +32,27 @@ export const CONTEXT_LABELS: Record<MeasurementContext, string> = {
   other: "אחר",
 };
 
+// Blood sugar threshold constants (mg/dL)
+export const BLOOD_SUGAR_THRESHOLDS = {
+  LOW: 70,          // Below this is hypoglycemia
+  HIGH: 180,        // Above this is hyperglycemia
+  VERY_HIGH: 250,   // Dangerous high level
+  FASTING_MAX: 100, // Upper limit for normal fasting
+  TARGET_MIN: 70,   // Lower target range
+  TARGET_MAX: 130,  // Upper target range (before meals)
+} as const;
+
 export const BLOOD_SUGAR_RANGES = {
-  low: { max: 70, color: "text-blue-600", bgColor: "bg-blue-50", label: "נמוך" },
+  low: { max: BLOOD_SUGAR_THRESHOLDS.LOW, color: "text-blue-600", bgColor: "bg-blue-50", label: "נמוך" },
   normal: {
-    min: 70,
-    max: 180,
+    min: BLOOD_SUGAR_THRESHOLDS.LOW,
+    max: BLOOD_SUGAR_THRESHOLDS.HIGH,
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
     label: "תקין",
   },
   high: {
-    min: 180,
+    min: BLOOD_SUGAR_THRESHOLDS.HIGH,
     color: "text-red-600",
     bgColor: "bg-red-50",
     label: "גבוה",
@@ -50,7 +60,7 @@ export const BLOOD_SUGAR_RANGES = {
 } as const;
 
 export function getBloodSugarStatus(value: number) {
-  if (value < 70) return BLOOD_SUGAR_RANGES.low;
-  if (value <= 180) return BLOOD_SUGAR_RANGES.normal;
+  if (value < BLOOD_SUGAR_THRESHOLDS.LOW) return BLOOD_SUGAR_RANGES.low;
+  if (value <= BLOOD_SUGAR_THRESHOLDS.HIGH) return BLOOD_SUGAR_RANGES.normal;
   return BLOOD_SUGAR_RANGES.high;
 }

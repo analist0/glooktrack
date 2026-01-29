@@ -7,8 +7,15 @@ import { MeasurementsList } from "@/components/diabetes-tracker/measurements-lis
 import { StatisticsCard } from "@/components/diabetes-tracker/statistics-card";
 import { TrendsChart } from "@/components/diabetes-tracker/trends-chart";
 import { ReportExport } from "@/components/diabetes-tracker/report-export";
+import { InsightsCard } from "@/components/diabetes-tracker/insights-card";
+import { AIAssistant } from "@/components/diabetes-tracker/ai-assistant";
 import { PWAInstaller } from "@/components/diabetes-tracker/pwa-installer";
+import { AdminSettings } from "@/components/diabetes-tracker/admin-settings";
+import { AuthDialog } from "@/components/diabetes-tracker/auth-dialog";
+import { useAuth } from "@/lib/supabase/use-auth";
+import { syncMeasurementsToCloud, saveMeasurementToCloud, deleteMeasurementFromCloud } from "@/lib/supabase/data-service";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
+import type { AppSettings } from "@/lib/settings-types";
 import {
   loadMeasurements,
   saveMeasurement,
@@ -16,12 +23,13 @@ import {
   clearAllMeasurements,
   calculateStats,
 } from "@/lib/diabetes-storage";
-import { 
-  Phone, 
-  Code, 
-  Heart, 
-  Shield, 
-  Smartphone, 
+import { loadSettings } from "@/lib/settings-storage";
+import {
+  Phone,
+  Code,
+  Heart,
+  Shield,
+  Smartphone,
   Lightbulb,
   Clock,
   Utensils,
@@ -41,12 +49,12 @@ const HealthTips = memo(function HealthTips() {
   ];
 
   return (
-    <Card className="rounded-2xl border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50">
+    <Card className="rounded-2xl border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
       <CardHeader className="pb-2 sm:pb-3">
         <CardTitle className="flex items-center gap-2 justify-end text-base sm:text-lg">
           <span>טיפים לניהול סוכרת</span>
-          <div className="p-1.5 rounded-lg bg-amber-100">
-            <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+          <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50">
+            <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400" />
           </div>
         </CardTitle>
       </CardHeader>
@@ -68,7 +76,7 @@ const HealthTips = memo(function HealthTips() {
 const LoadingSkeleton = memo(function LoadingSkeleton() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <div className="h-14 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
+      <div className="h-11 sm:h-16 bg-gradient-to-l from-teal-600 to-emerald-500 animate-pulse" />
       <main className="max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <div className="space-y-4 sm:space-y-6">
@@ -95,17 +103,24 @@ export default function DiabetesTrackerPage() {
     totalCount: 0,
   });
   const [isLoaded, setIsLoaded] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const { user, isAuthenticated, signOut } = useAuth();
 
   // Load data on mount with cleanup
   useEffect(() => {
     let isMounted = true;
-    
+
     const loadData = () => {
       try {
         const stored = loadMeasurements();
+        const settings = loadSettings();
         if (isMounted) {
           setMeasurements(stored);
           setStats(calculateStats(stored));
+          setAppSettings(settings);
           setIsLoaded(true);
         }
       } catch (error) {
@@ -124,6 +139,40 @@ export default function DiabetesTrackerPage() {
     };
   }, []);
 
+  const handleSettingsChange = useCallback((newSettings: AppSettings) => {
+    setAppSettings(newSettings);
+    // Reload measurements in case data was imported
+    const stored = loadMeasurements();
+    setMeasurements(stored);
+    setStats(calculateStats(stored));
+  }, []);
+
+  // Cloud sync function
+  const handleSync = useCallback(async () => {
+    if (!user || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const result = await syncMeasurementsToCloud(user.id);
+      if (result.downloaded > 0) {
+        // Reload local data after sync
+        const stored = loadMeasurements();
+        setMeasurements(stored);
+        setStats(calculateStats(stored));
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [user, isSyncing]);
+
+  // Auto-sync on login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      handleSync();
+    }
+  }, [isAuthenticated, user?.id, handleSync]);
+
   const updateStats = useCallback((newMeasurements: BloodSugarMeasurement[]) => {
     setStats(calculateStats(newMeasurements));
   }, []);
@@ -133,8 +182,12 @@ export default function DiabetesTrackerPage() {
       const updated = saveMeasurement(measurement);
       setMeasurements(updated);
       updateStats(updated);
+      // Save to cloud if authenticated
+      if (user) {
+        saveMeasurementToCloud(user.id, measurement).catch(console.error);
+      }
     },
-    [updateStats]
+    [updateStats, user]
   );
 
   const handleDeleteMeasurement = useCallback(
@@ -142,8 +195,12 @@ export default function DiabetesTrackerPage() {
       const updated = deleteMeasurement(id);
       setMeasurements(updated);
       updateStats(updated);
+      // Delete from cloud if authenticated
+      if (user) {
+        deleteMeasurementFromCloud(id).catch(console.error);
+      }
     },
-    [updateStats]
+    [updateStats, user]
   );
 
   const handleClearAll = useCallback(() => {
@@ -164,7 +221,7 @@ export default function DiabetesTrackerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col overflow-x-hidden">
       {/* Skip link for accessibility */}
       <a href="#main-content" className="skip-link sr-only focus:not-sr-only">
         דלג לתוכן הראשי
@@ -172,13 +229,30 @@ export default function DiabetesTrackerPage() {
       
       {/* PWA Installer */}
       <PWAInstaller />
-      
-      <Header />
+
+      <Header
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenAuth={() => setAuthOpen(true)}
+        isAuthenticated={isAuthenticated}
+        onSignOut={signOut}
+        onSync={handleSync}
+        isSyncing={isSyncing}
+      />
+
+      {/* Auth Dialog */}
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+
+      {/* Admin Settings Dialog */}
+      <AdminSettings
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onSettingsChange={handleSettingsChange}
+      />
 
       <main id="main-content" className="flex-1 w-full max-w-5xl mx-auto px-3 py-4 sm:px-6 sm:py-8">
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* עמודה ימנית - טופס ורשימה */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             <MeasurementForm onSave={handleSaveMeasurement} />
             <div className="lg:hidden">
               <StatisticsCard stats={stats} />
@@ -191,14 +265,20 @@ export default function DiabetesTrackerPage() {
           </div>
 
           {/* עמודה שמאלית - סטטיסטיקות וגרף */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0">
             <div className="hidden lg:block">
               <StatisticsCard stats={stats} />
             </div>
             <TrendsChart measurements={measurements} />
-            
+
+            {/* תובנות חכמות */}
+            <InsightsCard measurements={measurements} />
+
+            {/* עוזר AI */}
+            <AIAssistant measurements={measurements} />
+
             {/* טיפים לבריאות */}
-            <HealthTips />
+            {(!appSettings || appSettings.display.showTips) && <HealthTips />}
             
             {/* כפתור ייצוא דו"ח */}
             <ReportExport measurements={measurements} stats={stats} />
@@ -206,19 +286,19 @@ export default function DiabetesTrackerPage() {
         </div>
 
         {/* הודעת פרטיות - מיושרת לימין */}
-        <div className="mt-6 sm:mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-teal-50 to-emerald-50 border border-teal-100 shadow-sm">
+        <div className="mt-6 sm:mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-l from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 border border-teal-100 dark:border-teal-800 shadow-sm">
           <div className="flex items-start gap-3 justify-end">
             <div className="text-right flex-1">
               <div className="flex items-center gap-2 justify-end mb-1">
-                <p className="font-semibold text-teal-800 text-sm sm:text-base">
+                <p className="font-semibold text-teal-800 dark:text-teal-200 text-sm sm:text-base">
                   הנתונים שלך מאובטחים
                 </p>
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 flex-shrink-0" />
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600 dark:text-teal-400 flex-shrink-0" />
               </div>
-              <p className="text-xs sm:text-sm text-teal-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-teal-700 dark:text-teal-300 leading-relaxed">
                 כל המידע נשמר באופן מקומי במכשיר שלך בלבד ואינו משותף עם שום שרת חיצוני.
               </p>
-              <p className="text-[10px] sm:text-xs text-teal-600 mt-1">
+              <p className="text-[10px] sm:text-xs text-teal-600 dark:text-teal-400 mt-1">
                 תמיד התייעץ עם הרופא המטפל שלך לקבלת ייעוץ רפואי מקצועי.
               </p>
             </div>
