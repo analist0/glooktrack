@@ -5,20 +5,12 @@
 
 "use client";
 
-import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseClient } from "./client";
 import type { BloodSugarMeasurement } from "@/lib/diabetes-types";
 import {
   loadMeasurements,
-  saveMeasurement,
+  saveMeasurementsBatch,
 } from "@/lib/diabetes-storage";
-
-// Untyped client for flexible queries
-function getClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 /**
  * סנכרון מדידות מקומיות ל-Supabase
@@ -28,7 +20,7 @@ export async function syncMeasurementsToCloud(userId: string): Promise<{
   downloaded: number;
   errors: string[];
 }> {
-  const supabase = getClient();
+  const supabase = getSupabaseClient();
   const result = { uploaded: 0, downloaded: 0, errors: [] as string[] };
 
   try {
@@ -80,19 +72,21 @@ export async function syncMeasurementsToCloud(userId: string): Promise<{
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const toDownload = (cloudMeasurements || []).filter((m: any) => !localIds.has(m.id));
 
+    // Batch save all downloaded measurements at once (avoids O(n²) localStorage ops)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const cloudM of toDownload as any[]) {
-      const localM: BloodSugarMeasurement = {
-        id: cloudM.id,
-        date: cloudM.date,
-        time: cloudM.time,
-        value: cloudM.value,
-        context: cloudM.context,
-        notes: cloudM.notes || undefined,
-        createdAt: new Date(cloudM.created_at).getTime(),
-      };
-      saveMeasurement(localM);
-      result.downloaded++;
+    const newMeasurements: BloodSugarMeasurement[] = (toDownload as any[]).map((cloudM) => ({
+      id: cloudM.id,
+      date: cloudM.date,
+      time: cloudM.time,
+      value: cloudM.value,
+      context: cloudM.context,
+      notes: cloudM.notes || undefined,
+      createdAt: new Date(cloudM.created_at).getTime(),
+    }));
+
+    if (newMeasurements.length > 0) {
+      saveMeasurementsBatch(newMeasurements);
+      result.downloaded = newMeasurements.length;
     }
   } catch (err) {
     result.errors.push(
@@ -111,7 +105,7 @@ export async function saveMeasurementToCloud(
   measurement: BloodSugarMeasurement
 ): Promise<boolean> {
   try {
-    const supabase = getClient();
+    const supabase = getSupabaseClient();
     const { error } = await supabase.from("measurements").upsert({
       id: measurement.id,
       user_id: userId,
@@ -136,7 +130,7 @@ export async function deleteMeasurementFromCloud(
   measurementId: string
 ): Promise<boolean> {
   try {
-    const supabase = getClient();
+    const supabase = getSupabaseClient();
     const { error } = await supabase
       .from("measurements")
       .delete()
@@ -156,7 +150,7 @@ export async function saveSettingsToCloud(
   settings: Record<string, unknown>
 ): Promise<boolean> {
   try {
-    const supabase = getClient();
+    const supabase = getSupabaseClient();
     const { error } = await supabase.from("settings").upsert(
       {
         user_id: userId,
@@ -179,7 +173,7 @@ export async function loadSettingsFromCloud(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any | null> {
   try {
-    const supabase = getClient();
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from("settings")
       .select("settings_json")
@@ -201,7 +195,7 @@ export async function updateProfile(
   profile: Record<string, string | undefined>
 ): Promise<boolean> {
   try {
-    const supabase = getClient();
+    const supabase = getSupabaseClient();
     const { error } = await supabase
       .from("profiles")
       .update(profile)

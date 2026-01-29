@@ -122,21 +122,6 @@ export default function DiabetesTrackerPage() {
           setStats(calculateStats(stored));
           setAppSettings(settings);
           setIsLoaded(true);
-
-          // Apply theme from settings
-          const root = document.documentElement;
-          if (settings.display.theme === "dark") {
-            root.classList.add("dark");
-          } else if (settings.display.theme === "light") {
-            root.classList.remove("dark");
-          } else {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            if (prefersDark) {
-              root.classList.add("dark");
-            } else {
-              root.classList.remove("dark");
-            }
-          }
         }
       } catch (error) {
         console.error("Error loading measurements:", error);
@@ -156,23 +141,6 @@ export default function DiabetesTrackerPage() {
 
   const handleSettingsChange = useCallback((newSettings: AppSettings) => {
     setAppSettings(newSettings);
-    // Apply theme
-    if (typeof document !== "undefined") {
-      const root = document.documentElement;
-      if (newSettings.display.theme === "dark") {
-        root.classList.add("dark");
-      } else if (newSettings.display.theme === "light") {
-        root.classList.remove("dark");
-      } else {
-        // system
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (prefersDark) {
-          root.classList.add("dark");
-        } else {
-          root.classList.remove("dark");
-        }
-      }
-    }
     // Reload measurements in case data was imported
     const stored = loadMeasurements();
     setMeasurements(stored);
@@ -203,7 +171,7 @@ export default function DiabetesTrackerPage() {
     if (isAuthenticated && user) {
       handleSync();
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, handleSync]);
 
   const updateStats = useCallback((newMeasurements: BloodSugarMeasurement[]) => {
     setStats(calculateStats(newMeasurements));
@@ -216,7 +184,7 @@ export default function DiabetesTrackerPage() {
       updateStats(updated);
       // Save to cloud if authenticated
       if (user) {
-        saveMeasurementToCloud(user.id, measurement).catch(() => {});
+        saveMeasurementToCloud(user.id, measurement).catch(console.error);
       }
     },
     [updateStats, user]
@@ -229,7 +197,7 @@ export default function DiabetesTrackerPage() {
       updateStats(updated);
       // Delete from cloud if authenticated
       if (user) {
-        deleteMeasurementFromCloud(id).catch(() => {});
+        deleteMeasurementFromCloud(id).catch(console.error);
       }
     },
     [updateStats, user]

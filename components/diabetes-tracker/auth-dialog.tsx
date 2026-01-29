@@ -124,8 +124,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
           )}
 
-          {mode !== "reset" || mode === "reset" ? (
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label htmlFor="email" className="text-right block">אימייל</Label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -140,8 +139,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                   required
                 />
               </div>
-            </div>
-          ) : null}
+          </div>
 
           {mode !== "reset" && (
             <div className="space-y-2">
