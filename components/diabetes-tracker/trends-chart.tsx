@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   ReferenceLine,
-  ResponsiveContainer,
 } from "recharts";
 import {
   Card,
@@ -94,8 +93,7 @@ export function TrendsChart({ measurements }: TrendsChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-56 sm:h-72 lg:h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className="h-56 sm:h-72 lg:h-80 w-full overflow-hidden">
             <LineChart
               data={chartData}
               margin={{ top: 20, right: 10, left: 0, bottom: 20 }}
@@ -196,7 +194,6 @@ export function TrendsChart({ measurements }: TrendsChartProps) {
                 }}
               />
             </LineChart>
-          </ResponsiveContainer>
         </ChartContainer>
 
         {/* מקרא */}

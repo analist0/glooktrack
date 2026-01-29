@@ -1,13 +1,7 @@
 import React from "react";
-import { Heebo } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
-
-const heebo = Heebo({ 
-  subsets: ["hebrew", "latin"],
-  display: "swap",
-  variable: "--font-heebo",
-});
 
 export default function RootLayout({
   children,
@@ -15,7 +9,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="he" dir="rtl" className={heebo.variable}>
+    <html lang="he" dir="rtl" suppressHydrationWarning>
       <head>
         {/* Basic Meta */}
         <meta charSet="utf-8" />
@@ -79,6 +73,10 @@ export default function RootLayout({
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&display=swap"
+          rel="stylesheet"
+        />
         
         {/* Security */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
@@ -152,7 +150,14 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
