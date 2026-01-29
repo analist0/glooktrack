@@ -259,9 +259,10 @@ export function UnifiedAdminDashboard() {
     }
   };
 
-  // Clear all data handler
+  // Clear all GlucoTrack data (not all localStorage)
   const handleClearAll = () => {
-    localStorage.clear();
+    const appKeys = ["diabetesMeasurements", "glucotrackSettings", "diabetesProfileImage", "diabetesPatientName", "pwa-banner-dismissed"];
+    appKeys.forEach((key) => localStorage.removeItem(key));
     loadLocalData();
     setShowClearConfirm(false);
   };

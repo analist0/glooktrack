@@ -33,6 +33,7 @@ const store: Record<Provider, KeyUsage[]> = {
 let globalStats: AIStats = createDefaultStats();
 
 let initialized = false;
+let hydrated = false;
 let persistenceEnabled = true;
 
 function newKey(key: string): KeyUsage {
@@ -49,20 +50,12 @@ function newKey(key: string): KeyUsage {
  * Initialize keys from environment and load persisted data
  */
 async function initKeysAsync(): Promise<void> {
-  if (initialized) return;
+  if (hydrated) return;
 
-  // Load from environment
-  const perplexityKeys = process.env.PERPLEXITY_KEYS?.split(",").filter((k) =>
-    k.trim()
-  );
-  const xaiKeys = process.env.XAI_KEYS?.split(",").filter((k) => k.trim());
-  const geminiKeys = process.env.GEMINI_KEYS?.split(",").filter((k) =>
-    k.trim()
-  );
-
-  store.perplexity = perplexityKeys?.map((k) => newKey(k)) || [];
-  store.xai = xaiKeys?.map((k) => newKey(k)) || [];
-  store.gemini = geminiKeys?.map((k) => newKey(k)) || [];
+  // Ensure keys are loaded from env first
+  if (!initialized) {
+    initKeys();
+  }
 
   // Try to load persisted data
   try {
@@ -95,7 +88,7 @@ async function initKeysAsync(): Promise<void> {
     console.warn("[Key Manager] Failed to load persisted data:", error);
   }
 
-  initialized = true;
+  hydrated = true;
 }
 
 // Synchronous version for immediate use
@@ -116,7 +109,7 @@ function initKeys() {
 
   initialized = true;
 
-  // Load persisted data in background
+  // Load persisted data in background (hydration)
   initKeysAsync().catch(console.error);
 }
 

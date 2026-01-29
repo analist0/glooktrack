@@ -48,36 +48,46 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE measurements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for profiles
+-- RLS Policies for profiles (idempotent)
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Users can insert own profile" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
--- RLS Policies for measurements
+-- RLS Policies for measurements (idempotent)
+DROP POLICY IF EXISTS "Users can view own measurements" ON measurements;
 CREATE POLICY "Users can view own measurements" ON measurements
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own measurements" ON measurements;
 CREATE POLICY "Users can insert own measurements" ON measurements
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own measurements" ON measurements;
 CREATE POLICY "Users can update own measurements" ON measurements
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own measurements" ON measurements;
 CREATE POLICY "Users can delete own measurements" ON measurements
   FOR DELETE USING (auth.uid() = user_id);
 
--- RLS Policies for settings
+-- RLS Policies for settings (idempotent)
+DROP POLICY IF EXISTS "Users can view own settings" ON settings;
 CREATE POLICY "Users can view own settings" ON settings
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own settings" ON settings;
 CREATE POLICY "Users can insert own settings" ON settings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own settings" ON settings;
 CREATE POLICY "Users can update own settings" ON settings
   FOR UPDATE USING (auth.uid() = user_id);
 
@@ -90,14 +100,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS update_measurements_updated_at ON measurements;
 CREATE TRIGGER update_measurements_updated_at
   BEFORE UPDATE ON measurements
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
 CREATE TRIGGER update_settings_updated_at
   BEFORE UPDATE ON settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
@@ -116,6 +129,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();

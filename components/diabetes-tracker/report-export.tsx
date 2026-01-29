@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { FileText, Download, Printer, Calendar, TrendingUp, Activity, User, Clock, BarChart3, PieChart } from "lucide-react";
+import { FileText, Download, Printer, Calendar, TrendingUp, User, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
-import { CONTEXT_LABELS, getBloodSugarStatus, BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
+import { CONTEXT_LABELS, BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
 import { formatDate, formatTime } from "@/lib/diabetes-storage";
 
 // HTML escape function to prevent XSS

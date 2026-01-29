@@ -62,6 +62,13 @@ export function exportAllData(): string {
   return JSON.stringify(data, null, 2);
 }
 
+const ALLOWED_IMPORT_KEYS = new Set([
+  "diabetesMeasurements",
+  "glucotrackSettings",
+  "diabetesProfileImage",
+  "diabetesPatientName",
+]);
+
 export function importAllData(jsonString: string): boolean {
   if (typeof window === "undefined") return false;
 
@@ -71,6 +78,8 @@ export function importAllData(jsonString: string): boolean {
     if (typeof data !== "object" || data === null) return false;
 
     for (const [key, value] of Object.entries(data)) {
+      if (!ALLOWED_IMPORT_KEYS.has(key)) continue;
+
       if (typeof value === "string") {
         localStorage.setItem(key, value);
       } else {

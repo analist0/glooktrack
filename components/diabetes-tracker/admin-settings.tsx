@@ -178,7 +178,8 @@ export function AdminSettings({
   };
 
   const handleClearAllData = () => {
-    localStorage.clear();
+    const appKeys = ["diabetesMeasurements", "glucotrackSettings", "diabetesProfileImage", "diabetesPatientName", "pwa-banner-dismissed"];
+    appKeys.forEach((key) => localStorage.removeItem(key));
     setSettings(DEFAULT_SETTINGS);
     setStorageInfo(getStorageUsage());
     setShowClearDataConfirm(false);
