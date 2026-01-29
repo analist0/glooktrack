@@ -11,6 +11,9 @@ import { InsightsCard } from "@/components/diabetes-tracker/insights-card";
 import { AIAssistant } from "@/components/diabetes-tracker/ai-assistant";
 import { PWAInstaller } from "@/components/diabetes-tracker/pwa-installer";
 import { AdminSettings } from "@/components/diabetes-tracker/admin-settings";
+import { AuthDialog } from "@/components/diabetes-tracker/auth-dialog";
+import { useAuth } from "@/lib/supabase/use-auth";
+import { syncMeasurementsToCloud, saveMeasurementToCloud, deleteMeasurementFromCloud } from "@/lib/supabase/data-service";
 import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-types";
 import type { AppSettings } from "@/lib/settings-types";
 import {
@@ -101,7 +104,10 @@ export default function DiabetesTrackerPage() {
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const { user, isAuthenticated, signOut } = useAuth();
 
   // Load data on mount with cleanup
   useEffect(() => {
@@ -173,6 +179,32 @@ export default function DiabetesTrackerPage() {
     setStats(calculateStats(stored));
   }, []);
 
+  // Cloud sync function
+  const handleSync = useCallback(async () => {
+    if (!user || isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const result = await syncMeasurementsToCloud(user.id);
+      if (result.downloaded > 0) {
+        // Reload local data after sync
+        const stored = loadMeasurements();
+        setMeasurements(stored);
+        setStats(calculateStats(stored));
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [user, isSyncing]);
+
+  // Auto-sync on login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      handleSync();
+    }
+  }, [isAuthenticated, user?.id]);
+
   const updateStats = useCallback((newMeasurements: BloodSugarMeasurement[]) => {
     setStats(calculateStats(newMeasurements));
   }, []);
@@ -182,8 +214,12 @@ export default function DiabetesTrackerPage() {
       const updated = saveMeasurement(measurement);
       setMeasurements(updated);
       updateStats(updated);
+      // Save to cloud if authenticated
+      if (user) {
+        saveMeasurementToCloud(user.id, measurement).catch(() => {});
+      }
     },
-    [updateStats]
+    [updateStats, user]
   );
 
   const handleDeleteMeasurement = useCallback(
@@ -191,8 +227,12 @@ export default function DiabetesTrackerPage() {
       const updated = deleteMeasurement(id);
       setMeasurements(updated);
       updateStats(updated);
+      // Delete from cloud if authenticated
+      if (user) {
+        deleteMeasurementFromCloud(id).catch(() => {});
+      }
     },
-    [updateStats]
+    [updateStats, user]
   );
 
   const handleClearAll = useCallback(() => {
@@ -222,7 +262,17 @@ export default function DiabetesTrackerPage() {
       {/* PWA Installer */}
       <PWAInstaller />
 
-      <Header onOpenSettings={() => setSettingsOpen(true)} />
+      <Header
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenAuth={() => setAuthOpen(true)}
+        isAuthenticated={isAuthenticated}
+        onSignOut={signOut}
+        onSync={handleSync}
+        isSyncing={isSyncing}
+      />
+
+      {/* Auth Dialog */}
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
 
       {/* Admin Settings Dialog */}
       <AdminSettings
