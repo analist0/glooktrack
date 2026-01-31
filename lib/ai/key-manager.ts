@@ -34,7 +34,7 @@ let globalStats: AIStats = createDefaultStats();
 
 let initialized = false;
 let hydrated = false;
-let persistenceEnabled = true;
+const persistenceEnabled = true;
 
 function newKey(key: string): KeyUsage {
   return {

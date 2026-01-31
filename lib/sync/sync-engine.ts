@@ -737,7 +737,7 @@ export class SyncEngine {
         resolvedItem = localItem.updatedAt > remoteItem.updatedAt ? localItem : remoteItem;
         break;
 
-      case ConflictResolution.KeepBoth:
+      case ConflictResolution.KeepBoth: {
         // שמור את שני הגרסאות עם מזהים שונים
         const newId = `${localItem.id}_conflict_${Date.now()}`;
         const duplicateItem: VersionedData = {
@@ -748,6 +748,7 @@ export class SyncEngine {
         this.saveLocalItem(entityType, duplicateItem);
         resolvedItem = remoteItem;
         break;
+      }
 
       case ConflictResolution.Manual:
         // שמור את שתי הגרסאות זמנית ופלוט אירוע לטיפול ידני

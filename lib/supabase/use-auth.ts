@@ -32,7 +32,7 @@ export function useAuth(): AuthState & AuthActions {
     const supabase = getSupabaseClient();
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    supabase.auth.getSession().then(({ data: { session: s } }: { data: { session: Session | null } }) => {
       setSession(s);
       setUser(s?.user ?? null);
       setIsLoading(false);
@@ -41,7 +41,7 @@ export function useAuth(): AuthState & AuthActions {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
+    } = supabase.auth.onAuthStateChange((_event: string, s: Session | null) => {
       setSession(s);
       setUser(s?.user ?? null);
       setIsLoading(false);
