@@ -112,4 +112,4 @@ CREATE POLICY "No direct access to admin log" ON admin_activity_log FOR SELECT U
 DROP TRIGGER IF EXISTS update_module_access_updated_at ON module_access;
 CREATE TRIGGER update_module_access_updated_at
   BEFORE UPDATE ON module_access
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
