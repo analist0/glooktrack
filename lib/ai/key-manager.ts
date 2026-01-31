@@ -52,6 +52,9 @@ export function blockKey(provider: Provider, key: string) {
   if (entry) entry.blocked = true;
 }
 
-export function debugStats() {
-  return store;
+/** @internal Reset store state — for tests only */
+export function _resetStore() {
+  store.perplexity = [];
+  store.xai = [];
+  store.gemini = [];
 }

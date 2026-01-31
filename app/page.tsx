@@ -108,8 +108,7 @@ export default function DiabetesTrackerPage() {
           setStats(calculateStats(stored));
           setIsLoaded(true);
         }
-      } catch (error) {
-        console.error("Error loading measurements:", error);
+      } catch {
         if (isMounted) {
           setIsLoaded(true);
         }
