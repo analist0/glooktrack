@@ -17,6 +17,37 @@ import { estimateCost, calculateActualUsage } from "@/lib/ai/usage-engine";
 import { callProvider, getRecommendedProvider } from "@/lib/ai/router";
 import { BLOOD_SUGAR_THRESHOLDS } from "@/lib/diabetes-types";
 
+// Log conversation to Supabase (non-blocking)
+async function logConversation(data: {
+  userId?: string;
+  provider: string;
+  userMessage: string;
+  aiResponse: string;
+  taskType: string;
+  tokensUsed: number;
+  costEstimate: number;
+}) {
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key || !data.userId) return;
+
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(url, key);
+    await sb.from("ai_conversations").insert({
+      user_id: data.userId,
+      provider: data.provider,
+      user_message: data.userMessage,
+      ai_response: data.aiResponse,
+      task_type: data.taskType,
+      tokens_used: data.tokensUsed,
+      cost_estimate: data.costEstimate,
+    });
+  } catch {
+    // Non-critical, ignore errors
+  }
+}
+
 // System prompt for GlucoTrack AI Assistant
 const GLUCOTRACK_SYSTEM_PROMPT = `אתה עוזר AI מומחה לניהול סוכרת בשם "גלוקו-AI".
 תפקידך לעזור למשתמשים להבין את נתוני הסוכר שלהם ולתת תובנות מועילות.
@@ -44,9 +75,11 @@ export async function POST(request: NextRequest) {
       provider: requestedProvider,
       measurements,
       taskType = "analysis",
+      userId,
     } = body as {
       prompt: string;
       provider?: Provider;
+      userId?: string;
       measurements?: Array<{
         value: number;
         date: string;
@@ -117,6 +150,17 @@ export async function POST(request: NextRequest) {
 
       // Report usage (async, non-blocking)
       await reportUsage(provider, keyData.key, actualUsage.totalTokens, actualUsage.costUSD);
+
+      // Log conversation (non-blocking)
+      logConversation({
+        userId,
+        provider,
+        userMessage: prompt,
+        aiResponse: response.text,
+        taskType,
+        tokensUsed: actualUsage.totalTokens,
+        costEstimate: actualUsage.costUSD,
+      }).catch(() => {});
 
       return NextResponse.json({
         ok: true,
