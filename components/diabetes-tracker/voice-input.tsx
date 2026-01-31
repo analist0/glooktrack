@@ -309,8 +309,7 @@ export function VoiceInput({ onVoiceData }: VoiceInputProps) {
         setIsListening(false);
       };
 
-      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error("Speech recognition error:", event.error);
+      recognition.onerror = () => {
         setIsListening(false);
       };
 

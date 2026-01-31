@@ -23,6 +23,15 @@ import type { BloodSugarMeasurement, MeasurementStats } from "@/lib/diabetes-typ
 import { CONTEXT_LABELS, getBloodSugarStatus } from "@/lib/diabetes-types";
 import { formatDate, formatTime } from "@/lib/diabetes-storage";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 interface ReportExportProps {
   measurements: BloodSugarMeasurement[];
   stats: MeasurementStats;
@@ -90,7 +99,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
   const filteredStats = calculateFilteredStats();
 
   const generateReportHTML = () => {
-    const name = getPatientName();
+    const name = escapeHtml(getPatientName());
     const reportDate = new Date().toLocaleDateString("he-IL", {
       year: "numeric",
       month: "long",
@@ -353,7 +362,7 @@ export function ReportExport({ measurements, stats, patientName }: ReportExportP
               <td>${formatTime(m.time)}</td>
               <td class="${valueClass}">${m.value}</td>
               <td>${CONTEXT_LABELS[m.context]}</td>
-              <td>${m.notes || "-"}</td>
+              <td>${escapeHtml(m.notes || "-")}</td>
             </tr>
           `;
           })

@@ -31,12 +31,8 @@ export function PWAInstaller() {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
-        .then((registration) => {
-          console.log("[PWA] Service Worker registered:", registration.scope);
-        })
-        .catch((error) => {
-          console.log("[PWA] Service Worker registration failed:", error);
-        });
+        .then(() => {})
+        .catch(() => {});
     }
 
     // Listen for install prompt
@@ -101,8 +97,8 @@ export function PWAInstaller() {
       
       setDeferredPrompt(null);
       setShowInstallBanner(false);
-    } catch (error) {
-      console.log("[PWA] Install error:", error);
+    } catch {
+      // Install prompt failed or was dismissed
     }
   }, [deferredPrompt]);
 

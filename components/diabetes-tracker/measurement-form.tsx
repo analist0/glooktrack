@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,13 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    };
+  }, []);
 
   const numValue = Number(value);
   const currentStatus = value && !Number.isNaN(numValue) && numValue >= 20 && numValue <= 600 
@@ -91,7 +98,8 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
     onSave(measurement);
 
     setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2500);
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    successTimerRef.current = setTimeout(() => setShowSuccess(false), 2500);
 
     setValue("");
     setContext("");
@@ -266,6 +274,7 @@ export function MeasurementForm({ onSave }: MeasurementFormProps) {
               onChange={(e) => setNotes(e.target.value)}
               className="min-h-16 sm:min-h-20 text-base resize-none text-right rounded-xl"
               rows={2}
+              maxLength={500}
             />
           </div>
 

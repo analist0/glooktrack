@@ -15,7 +15,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('[SW] Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => self.skipWaiting())
@@ -30,10 +29,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           keys
             .filter((key) => key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
-            .map((key) => {
-              console.log('[SW] Removing old cache:', key);
-              return caches.delete(key);
-            })
+            .map((key) => caches.delete(key))
         );
       })
       .then(() => self.clients.claim())
@@ -104,9 +100,7 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncMeasurements() {
-  // This would sync with a server if we had one
-  // For now, data is stored in localStorage
-  console.log('[SW] Sync completed');
+  // Placeholder for future server sync
 }
 
 // Push notifications (for future use)
@@ -155,4 +149,3 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log('[SW] Service Worker loaded');
